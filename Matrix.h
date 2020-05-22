@@ -6,6 +6,11 @@
 #include <random>
 #include <ctime>
 #include <fstream>
+
+#include "IntervalTree.h"
+#include "SegementTree.h"
+
+
 using namespace std;
 
 #ifndef MATRIX_H
@@ -46,6 +51,23 @@ public:
 
     }
 
+    Matrix(const int rows, const int cols, const int range, const int n) // Matrix With Defined Size Random Value with fewer rectangler 
+    {
+        this -> rows = rows;
+        this -> cols = cols;
+        allocate_space();
+        int gapr = rows / n;
+        int gapc = cols / n;
+        for (int i = 0; i < rows; i+=gapr)
+            for(int j = 0; j < cols; j+=gapc){
+                int t = (rand() % (range + 1));
+                for (int k1 = 0; k1 < gapr; k1++)
+                    for (int k2 = 0; k2 < gapc; k2++)
+                        if(i + k1 < rows && j + k2 < rows) data[i + k1][j + k2] = t;
+            }
+
+    }
+
     ~Matrix()
     {
         for (int i = 0; i < rows; i++) free(data[i]);
@@ -77,13 +99,15 @@ public:
         {
             for(int j = 0; j < cols; j++)
             {
-                printf("%d ", data[i][j]);
+                // printf("%d ", data[i][j]);
+                cout << data[i][j] << " ";
             }
-            printf("\n");
+            cout << endl;
         }
+        cout << endl;
     }
 
-    void print_hash()
+    int print_hash()
     {
         int sum = 0;
         for(int i = 0; i < rows; i+=2)
@@ -94,6 +118,7 @@ public:
             }
         }
         printf("%d\n", sum);
+        return sum;
     }
 
     bool equals(Matrix& mat2){
@@ -117,17 +142,26 @@ public:
                 mat2.data[i - st_row][j - st_col] = data[i][j];
     }
 
+    int card(int k1, int k2, int j1, int j2){
+        if (k2 < j1 || j2 < k1) return 0;
+        //if (k2 >= j1) return 
+        int l = k1 > j1 ? k1 : j1;
+        int r = k2 < j2 ? k2 : j2;
+        //cout << "card: " << k1 << "_" << k2 << ", " << j1 << "_" << j2 << ": " << r-l+1 << endl;
+        return r - l + 1;
+    }
+
     bool naive_multi(Matrix& mat2, Matrix& res);
     bool strassen(Matrix& mat2, Matrix& res);
     void strassen_helper(Matrix& mat1, Matrix& mat2, Matrix& res);
-
+    bool threeDMultiply(Matrix& mat2, Matrix& res);
 
     bool add(Matrix& mat2, Matrix& res);
     bool subtract(Matrix& mat2, Matrix& res);
     bool valid_multi(Matrix& mat2);
     bool same_shape(Matrix& mat2);
     bool is_square() { return cols == rows;}
-    // readMatrix from file
+    // Matrix from file
     void read_from_file(const char * filename) {
         std::ifstream file;
         file.open(filename);
@@ -316,6 +350,11 @@ void Matrix::strassen_helper(Matrix& mat1, Matrix& mat2, Matrix& res)
 
 }
 
+bool Matrix::threeDMultiply(Matrix& mat2, Matrix& res)
+{
+    
+}
+
 //#include "Matrix.inl"
 
 struct Node
@@ -443,8 +482,6 @@ bool SparseMatrix::naive_sparse_multi(Matrix& mat2, Matrix& res)
     return true;
 }
 
-
-
 bool SparseMatrix::fast_sparse_multi(SparseMatrix& mat2, Matrix& res)
 {
     if (!valid_multi(mat2)) return false;
@@ -516,5 +553,7 @@ bool SparseMatrix::fast_sparse_multi(SparseMatrix& mat2, Matrix& res)
 
     return true;
 }
+
+
 
 #endif // MATRIX_H
